@@ -248,9 +248,25 @@ namespace Compras.Repositories
                 _context.Ordenes.Add(nuevaOrden);
                 await _context.SaveChangesAsync();
 
-                // Crear las entradas en Ordenes_Articulos
+                // Crear las entradas en Ordenes_Articulos y actualizar inventario
                 foreach (var articulo in articulos)
                 {
+                    var articuloDb = await _context.Articulos.FindAsync(articulo.IdArticulo);
+                    if (articuloDb == null || articuloDb.Quantityart < articulo.Cantidad)
+                    {
+                        await transaction.RollbackAsync();
+                        return new OrdenResponse
+                        {
+                            IsSuccessful = false,
+                            Message = $"Stock insuficiente para el artículo {articuloDb?.Nameart ?? "desconocido"}."
+                        };
+                    }
+
+                    // Actualizar la cantidad del artículo en el inventario
+                    articuloDb.Quantityart -= articulo.Cantidad;
+                    _context.Articulos.Update(articuloDb);
+
+                    // Añadir entrada en Ordenes_Articulos
                     _context.OrdenesArticulos.Add(new OrdenesArticulo
                     {
                         Idorder = nuevaOrden.Idorder,
@@ -278,7 +294,6 @@ namespace Compras.Repositories
                 };
             }
         }
-
 
         public async Task<List<OrdenDetalleResponse>> GetOrdenesByUsuarioId(int idUsuario)
         {
