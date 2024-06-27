@@ -1,0 +1,19 @@
+# Visual Studio
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Resharper
+_ReSharper*
+*.[Rr]e[Ss]harper
+*.[Dd]ot[Cc]over
+
+# Build Results
+[Bb]in/
+[Oo]bj/
+
+# Other
+.DS_Store
+Thumbs.db
