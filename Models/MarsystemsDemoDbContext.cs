@@ -55,6 +55,9 @@ public partial class MarsystemsDemoDbContext : DbContext
 
             entity.Property(e => e.Idcarrito).HasColumnName("idcarrito");
             entity.Property(e => e.Idarticulo).HasColumnName("idarticulo");
+            entity.Property(e => e.Cantidad)
+                .HasDefaultValue(1)
+                .HasColumnName("cantidad");
             entity.Property(e => e.Price)
                 .HasPrecision(10, 2)
                 .HasColumnName("price");

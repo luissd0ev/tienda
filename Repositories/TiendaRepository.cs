@@ -5,6 +5,50 @@ using Compras.Helpers;
 
 namespace Compras.Repositories
 {
+
+    public class OrdenResponse
+    {
+        public bool IsSuccessful { get; set; }
+        public string Message { get; set; }
+        public int IdOrder { get; set; }
+    }
+
+    public class OrdenDetalleResponse
+    {
+        public int IdOrder { get; set; }
+        public DateTime Fecha { get; set; }
+        public decimal Total { get; set; }
+        public List<ArticuloOrdenResponse> Articulos { get; set; } = new List<ArticuloOrdenResponse>();
+    }
+
+    public class ArticuloOrdenResponse
+    {
+        public int IdArticulo { get; set; }
+        public string NombreArticulo { get; set; }
+        public decimal Precio { get; set; }
+        public int Cantidad { get; set; }
+    }
+
+    public class ArticuloOrden
+    {
+        public int IdArticulo { get; set; }
+        public decimal Precio { get; set; }
+        public int Cantidad { get; set; }
+    }
+    public class CarritoResponse
+    {
+        public bool IsSuccessful { get; set; }
+        public string Message { get; set; }
+        public List<CarritoItemResponse> Items { get; set; } = new List<CarritoItemResponse>();
+    }
+
+    public class CarritoItemResponse
+    {
+        public int IdArticulo { get; set; }
+        public string NombreArticulo { get; set; }
+        public decimal Precio { get; set; }
+        public int Cantidad { get; set; }
+    }
     public class UserLogin
     {
         public string Email { get; set; }
@@ -101,7 +145,7 @@ namespace Compras.Repositories
                 .FirstOrDefaultAsync(c => c.Idcarrito == idUsuario);
         }
 
-        public async Task<bool> AddArticuloToCarritoAsync(int idUsuario, int idArticulo, decimal price)
+        public async Task<bool> AddArticuloToCarritoAsync(int idUsuario, int idArticulo, decimal price, int cantidad)
         {
             try
             {
@@ -118,9 +162,9 @@ namespace Compras.Repositories
 
                 if (existingItem != null)
                 {
-                    // Si el artículo ya está en el carrito, puedes actualizar la cantidad o el precio si es necesario
-                    // Pero en este caso, parece que solo mantenemos un registro por artículo en el carrito
-                    return false; // Si ya está en el carrito, no hacemos nada (puedes ajustar esto según tu lógica)
+                    // Si el artículo ya está en el carrito, actualizar la cantidad
+                    existingItem.Cantidad += cantidad;
+                    _context.Carritoscompras.Update(existingItem);
                 }
                 else
                 {
@@ -129,7 +173,8 @@ namespace Compras.Repositories
                     {
                         Idcarrito = idUsuario,
                         Idarticulo = idArticulo,
-                        Price = price
+                        Price = price,
+                        Cantidad = cantidad
                     };
                     _context.Carritoscompras.Add(nuevoArticuloEnCarrito);
                 }
@@ -145,8 +190,124 @@ namespace Compras.Repositories
             }
         }
 
+        public async Task<CarritoResponse> GetCarritoByUsuarioId(int idUsuario)
+        {
+            try
+            {
+                // Verificar si el usuario existe
+                var usuario = await _context.Usuarios.FindAsync(idUsuario);
+                if (usuario == null)
+                {
+                    return new CarritoResponse
+                    {
+                        IsSuccessful = false,
+                        Message = "Usuario no encontrado."
+                    };
+                }
+
+                // Consultar los artículos en el carrito del usuario
+                var carritoItems = await _context.Carritoscompras
+                                                 .Where(c => c.Idcarrito == idUsuario)
+                                                 .Select(c => new CarritoItemResponse
+                                                 {
+                                                     IdArticulo = c.Idarticulo,
+                                                     NombreArticulo = c.IdarticuloNavigation.Nameart,
+                                                     Precio = c.Price,
+                                                     Cantidad = c.Cantidad
+                                                 })
+                                                 .ToListAsync();
+
+                return new CarritoResponse
+                {
+                    IsSuccessful = true,
+                    Items = carritoItems
+                };
+            }
+            catch (Exception ex)
+            {
+                return new CarritoResponse
+                {
+                    IsSuccessful = false,
+                    Message = $"Error al consultar el carrito: {ex.Message}"
+                };
+            }
+        }
+
+        public async Task<OrdenResponse> RegistrarOrden(int idUsuario, List<ArticuloOrden> articulos)
+        {
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                // Crear la nueva orden
+                var nuevaOrden = new Ordene
+                {
+                    Iduser = idUsuario,
+                    Fecha = DateTime.Now,
+                    Total = articulos.Sum(a => a.Precio * a.Cantidad)
+                };
+                _context.Ordenes.Add(nuevaOrden);
+                await _context.SaveChangesAsync();
+
+                // Crear las entradas en Ordenes_Articulos
+                foreach (var articulo in articulos)
+                {
+                    _context.OrdenesArticulos.Add(new OrdenesArticulo
+                    {
+                        Idorder = nuevaOrden.Idorder,
+                        Idarticulo = articulo.IdArticulo,
+                        Cantidad = articulo.Cantidad
+                    });
+                }
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                return new OrdenResponse
+                {
+                    IsSuccessful = true,
+                    Message = "Orden registrada con éxito.",
+                    IdOrder = nuevaOrden.Idorder
+                };
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                return new OrdenResponse
+                {
+                    IsSuccessful = false,
+                    Message = $"Error al registrar la orden: {ex.Message}"
+                };
+            }
+        }
 
 
+        public async Task<List<OrdenDetalleResponse>> GetOrdenesByUsuarioId(int idUsuario)
+        {
+            try
+            {
+                var ordenes = await _context.Ordenes
+                                            .Where(o => o.Iduser == idUsuario)
+                                            .Select(o => new OrdenDetalleResponse
+                                            {
+                                                IdOrder = o.Idorder,
+                                                Fecha = o.Fecha,
+                                                Total = o.Total,
+                                                Articulos = o.OrdenesArticulos.Select(oa => new ArticuloOrdenResponse
+                                                {
+                                                    IdArticulo = oa.Idarticulo,
+                                                    NombreArticulo = oa.IdarticuloNavigation.Nameart,
+                                                    Precio = oa.IdarticuloNavigation.Priceart,
+                                                    Cantidad = oa.Cantidad
+                                                }).ToList()
+                                            })
+                                            .ToListAsync();
 
+                return ordenes;
+            }
+            catch (Exception ex)
+            {
+                // Manejar la excepción de acuerdo a tus necesidades
+                return new List<OrdenDetalleResponse>();
+            }
+        }
     }
 }

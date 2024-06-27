@@ -15,7 +15,13 @@ namespace Compras.Controllers
     [ApiController]
     public class MarsystemsDemo : ControllerBase
     {
-        
+
+        public class RegistrarOrdenRequest
+        {
+            public int IdUsuario { get; set; }
+            public List<ArticuloOrden> Articulos { get; set; } = new List<ArticuloOrden>();
+        }
+
         private ITiendaRepository _tiendaRepository;
         public MarsystemsDemo( ITiendaRepository tiendaRepository)
         {
@@ -73,11 +79,11 @@ namespace Compras.Controllers
         }
 
         [HttpPost("AddToCarrito")]
-        public async Task<IActionResult> AddToCarrito(int idUsuario, int idArticulo, decimal price)
+        public async Task<IActionResult> AddToCarrito(int idUsuario, int idArticulo, decimal price, int cantidad)
         {
             try
             {
-                bool added = await this._tiendaRepository.AddArticuloToCarritoAsync(idUsuario, idArticulo, price);
+                bool added = await this._tiendaRepository.AddArticuloToCarritoAsync(idUsuario, idArticulo, price, cantidad);
                 if (added)
                 {
                     return Ok("Artículo agregado al carrito exitosamente.");
@@ -93,6 +99,55 @@ namespace Compras.Controllers
             }
         }
 
+        [HttpGet("carrito/{idUsuario}")]
+        public async Task<IActionResult> GetCarrito(int idUsuario)
+        {
+            try
+            {
+                var response = await _tiendaRepository.GetCarritoByUsuarioId(idUsuario);
+                if (!response.IsSuccessful)
+                {
+                    return NotFound(response.Message);
+                }
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
+
+        [HttpPost("orden")]
+        public async Task<IActionResult> RegistrarOrden([FromBody] RegistrarOrdenRequest request)
+        {
+            try
+            {
+                var response = await _tiendaRepository.RegistrarOrden(request.IdUsuario, request.Articulos);
+                if (!response.IsSuccessful)
+                {
+                    return BadRequest(response.Message);
+                }
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
+
+        [HttpGet("ordenes/{idUsuario}")]
+        public async Task<IActionResult> GetOrdenes(int idUsuario)
+        {
+            try
+            {
+                var ordenes = await _tiendaRepository.GetOrdenesByUsuarioId(idUsuario);
+                return Ok(ordenes);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
 
     }
 }

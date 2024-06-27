@@ -10,6 +10,12 @@ namespace Compras.Repositories
 
         Task<List<Articulo>> GetArticulosAsync();
 
-        Task<bool> AddArticuloToCarritoAsync(int idUsuario, int idArticulo, decimal price); 
+        Task<bool> AddArticuloToCarritoAsync(int idUsuario, int idArticulo, decimal price, int cantidad);
+
+        Task<CarritoResponse> GetCarritoByUsuarioId(int idUsuario);
+
+        Task<OrdenResponse> RegistrarOrden(int idUsuario, List<ArticuloOrden> articulos);
+
+        Task<List<OrdenDetalleResponse>> GetOrdenesByUsuarioId(int idUsuario);
     }
 }

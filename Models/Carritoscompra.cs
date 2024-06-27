@@ -11,6 +11,8 @@ public partial class Carritoscompra
 
     public decimal Price { get; set; }
 
+    public int Cantidad { get; set; }
+
     public virtual Articulo IdarticuloNavigation { get; set; } = null!;
 
     public virtual Usuario IdcarritoNavigation { get; set; } = null!;
