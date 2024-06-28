@@ -83,19 +83,19 @@ namespace Compras.Controllers
         {
             try
             {
-                bool added = await this._tiendaRepository.AddArticuloToCarritoAsync(idUsuario, idArticulo, price, cantidad);
+                bool added = await _tiendaRepository.AddArticuloToCarritoAsync(idUsuario, idArticulo, price, cantidad);
                 if (added)
                 {
-                    return Ok("Artículo agregado al carrito exitosamente.");
+                    return Ok(new { message = "Artículo agregado al carrito exitosamente." });
                 }
                 else
                 {
-                    return BadRequest("El artículo ya está en el carrito.");
+                    return BadRequest(new { message = "El artículo ya está en el carrito." });
                 }
             }
             catch (Exception ex)
             {
-                return StatusCode(500, "Error al intentar agregar artículo al carrito: " + ex.Message);
+                return StatusCode(500, new { message = "Error al intentar agregar artículo al carrito.", error = ex.Message });
             }
         }
 

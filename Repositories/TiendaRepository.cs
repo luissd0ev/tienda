@@ -147,6 +147,7 @@ namespace Compras.Repositories
 
         public async Task<bool> AddArticuloToCarritoAsync(int idUsuario, int idArticulo, decimal price, int cantidad)
         {
+            using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
                 // Verificar si el artículo existe en la tabla Articulos
@@ -154,6 +155,12 @@ namespace Compras.Repositories
                 if (articulo == null)
                 {
                     throw new Exception("El artículo no existe.");
+                }
+
+                // Verificar si hay suficientes unidades disponibles en el inventario
+                if (articulo.Quantityart < cantidad)
+                {
+                    throw new Exception($"Stock insuficiente para el artículo {articulo.Nameart}. Cantidad disponible: {articulo.Quantityart}");
                 }
 
                 // Verificar si ya existe un registro del artículo en el carrito del usuario
@@ -179,17 +186,23 @@ namespace Compras.Repositories
                     _context.Carritoscompras.Add(nuevoArticuloEnCarrito);
                 }
 
+                // Actualizar el inventario del artículo
+                articulo.Quantityart -= cantidad;
+                _context.Articulos.Update(articulo);
+
                 await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+
                 return true;
             }
             catch (Exception ex)
             {
-                // Aquí puedes manejar la excepción según tus necesidades
-                // Por ejemplo, puedes registrar el error, lanzar una excepción personalizada, etc.
+                // Manejar la excepción según tus necesidades
+                // Puedes registrar el error, lanzar una excepción personalizada, etc.
+                await transaction.RollbackAsync();
                 throw new Exception("Error al agregar artículo al carrito.", ex);
             }
         }
-
         public async Task<CarritoResponse> GetCarritoByUsuarioId(int idUsuario)
         {
             try

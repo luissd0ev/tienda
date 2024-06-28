@@ -19,10 +19,11 @@ builder.Services.AddCors(p => p.AddPolicy("corsapp", builder =>
 {
     builder.AllowAnyMethod().AllowAnyHeader().AllowCredentials().AllowAnyOrigin().WithOrigins("http://localhost:4200");
 }));
+
 builder.Services.AddScoped<ITiendaRepository, TiendaRepository>();
 builder.Services.AddScoped<Funcionalidades>();
 var app = builder.Build();
-
+app.UseCors("corsapp");
 
 
 
