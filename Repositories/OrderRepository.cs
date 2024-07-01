@@ -76,7 +76,7 @@ namespace Compras.Repositories
             }
         }
 
-        public async Task<List<OrdenDetalleResponse>> Get(int idUsuario)
+        public async Task<List<OrdenDetalleResponse>> GetAll(int idUsuario)
         {
             try
             {

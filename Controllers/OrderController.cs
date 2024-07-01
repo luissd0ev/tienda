@@ -38,7 +38,7 @@ namespace Compras.Controllers
         {
             try
             {
-                var ordenes = await _orderRepository.Get(idUsuario);
+                var ordenes = await _orderRepository.GetAll(idUsuario);
                 return Ok(ordenes);
             }
             catch (Exception ex)
