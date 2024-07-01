@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Compras.Repositories
 {
-    public class OrderRepository
+    public class OrderRepository:IOrderRepository
     {
         private readonly MarsystemsDemoDbContext _context;
         private readonly Funcionalidades _funcionalidades;

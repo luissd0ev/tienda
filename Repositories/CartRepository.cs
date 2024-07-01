@@ -14,11 +14,50 @@ namespace Compras.Repositories
             _context = context;
             _funcionalidades = funcionalidades;
         }
-        public async Task<Carritoscompra> Get(int idUsuario)
+
+        public async Task<CarritoResponse> Get(int idUsuario)
         {
-            return await _context.Carritoscompras
-                .FirstOrDefaultAsync(c => c.Idcarrito == idUsuario);
+            try
+            {
+                // Verificar si el usuario existe
+                var usuario = await _context.Usuarios.FindAsync(idUsuario);
+                if (usuario == null)
+                {
+                    return new CarritoResponse
+                    {
+                        IsSuccessful = false,
+                        Message = "Usuario no encontrado."
+                    };
+                }
+
+                // Consultar los artículos en el carrito del usuario
+                var carritoItems = await _context.Carritoscompras
+                                                 .Where(c => c.Idcarrito == idUsuario)
+                                                 .Select(c => new CarritoItemResponse
+                                                 {
+                                                     IdArticulo = c.Idarticulo,
+                                                     NombreArticulo = c.IdarticuloNavigation.Nameart,
+                                                     Precio = c.Price,
+                                                     Cantidad = c.Cantidad
+                                                 })
+                                                 .ToListAsync();
+
+                return new CarritoResponse
+                {
+                    IsSuccessful = true,
+                    Items = carritoItems
+                };
+            }
+            catch (Exception ex)
+            {
+                return new CarritoResponse
+                {
+                    IsSuccessful = false,
+                    Message = $"Error al consultar el carrito: {ex.Message}"
+                };
+            }
         }
+
 
         public async Task<bool> AddArticleToCart(int idUsuario, int idArticulo, decimal price, int cantidad)
         {

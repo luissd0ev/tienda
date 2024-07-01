@@ -39,7 +39,7 @@ namespace Compras.Repositories
 
             };
         }
-
+         
         public async Task<RegisterResponse> Add(Usuario usuario)
         {
             // Verificar si el email ya está registrado

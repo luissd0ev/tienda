@@ -24,6 +24,9 @@ builder.Services.AddScoped<ITiendaRepository, TiendaRepository>();
 
 
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IArticleRepository, ArticleRepository>();
+builder.Services.AddScoped<ICart, CartRepository>();
+builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 
 builder.Services.AddScoped<Funcionalidades>();
 var app = builder.Build();

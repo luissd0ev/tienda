@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Compras.Repositories
 {
-    public class ArticleRepository
+    public class ArticleRepository:IArticleRepository
     {
         private readonly MarsystemsDemoDbContext _context;
         private readonly Funcionalidades _funcionalidades;
@@ -13,6 +13,7 @@ namespace Compras.Repositories
             _context = context;
             _funcionalidades = funcionalidades;
         }
+
         public async Task<List<Articulo>> GetAll()
         {
             try
@@ -24,6 +25,6 @@ namespace Compras.Repositories
                 throw new Exception("Error al obtener los artículos.", ex);
             }
         }
-
+    
     }
 }
