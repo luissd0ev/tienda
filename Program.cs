@@ -21,6 +21,10 @@ builder.Services.AddCors(p => p.AddPolicy("corsapp", builder =>
 }));
 
 builder.Services.AddScoped<ITiendaRepository, TiendaRepository>();
+
+
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+
 builder.Services.AddScoped<Funcionalidades>();
 var app = builder.Build();
 app.UseCors("corsapp");

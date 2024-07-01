@@ -79,6 +79,7 @@ namespace Compras.Repositories
             _context = context;
             _funcionalidades = funcionalidades;
         }
+        ///Listo
         public async Task<LoginResponse> Login(UserLogin usuario)
         {
             var user = await _context.Usuarios.SingleOrDefaultAsync(u => u.Email == usuario.Email);
@@ -103,7 +104,7 @@ namespace Compras.Repositories
                                           
             };
         }
-
+        ///Listo
         public async Task<RegisterResponse> Register(Usuario usuario)
         {
             // Verificar si el email ya está registrado
@@ -126,7 +127,7 @@ namespace Compras.Repositories
                 // Puedes agregar más datos relevantes aquí
             };
         }
-
+        ///Listo
         public async Task<List<Articulo>> GetArticulosAsync()
         {
             try
@@ -138,7 +139,7 @@ namespace Compras.Repositories
                 throw new Exception("Error al obtener los artículos.", ex);
             }
         }
-
+        ///Listo 
         public async Task<Carritoscompra> GetCarritoAsync(int idUsuario)
         {
             return await _context.Carritoscompras
