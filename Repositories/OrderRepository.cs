@@ -55,6 +55,11 @@ namespace Compras.Repositories
                         Cantidad = articulo.Cantidad
                     });
                 }
+
+                // Limpiar los elementos del carrito del usuario
+                var itemsCarrito = await _context.Carritoscompras.Where(c => c.Idcarrito == idUsuario).ToListAsync();
+                _context.Carritoscompras.RemoveRange(itemsCarrito);
+
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
 

@@ -117,5 +117,33 @@ namespace Compras.Repositories
                 throw new Exception("Error al agregar artículo al carrito.", ex);
             }
         }
+
+        public async Task<bool> Remove(int idUsuario, int idArticulo)
+        {
+            try
+            {
+                // Buscar el artículo en el carrito del usuario
+                var articuloEnCarrito = await _context.Carritoscompras
+                    .FirstOrDefaultAsync(c => c.Idcarrito == idUsuario && c.Idarticulo == idArticulo);
+
+                if (articuloEnCarrito == null)
+                {
+                    throw new Exception("El artículo no está en el carrito.");
+                }
+
+                // Eliminar el artículo del carrito
+                _context.Carritoscompras.Remove(articuloEnCarrito);
+
+                await _context.SaveChangesAsync();
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                // Manejar la excepción según tus necesidades
+                throw new Exception("Error al eliminar artículo del carrito.", ex);
+            }
+        }
+
     }
 }
