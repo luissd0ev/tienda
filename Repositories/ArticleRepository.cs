@@ -25,6 +25,18 @@ namespace Compras.Repositories
                 throw new Exception("Error al obtener los artículos.", ex);
             }
         }
-    
+
+        public async Task<Articulo> Get(int id)
+        {
+            try
+            {
+                return await _context.Articulos.FindAsync(id);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error al obtener el artículo.", ex);
+            }
+        }
+
     }
 }

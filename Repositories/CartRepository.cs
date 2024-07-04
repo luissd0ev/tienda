@@ -71,15 +71,22 @@ namespace Compras.Repositories
                     throw new Exception("El artículo no existe.");
                 }
 
-                // Verificar si hay suficientes unidades disponibles en el inventario
-                if (articulo.Quantityart < cantidad)
-                {
-                    throw new Exception($"Stock insuficiente para el artículo {articulo.Nameart}. Cantidad disponible: {articulo.Quantityart}");
-                }
-
                 // Verificar si ya existe un registro del artículo en el carrito del usuario
                 var existingItem = await _context.Carritoscompras
                     .FirstOrDefaultAsync(c => c.Idcarrito == idUsuario && c.Idarticulo == idArticulo);
+
+                int cantidadTotalSolicitada = cantidad;
+                if (existingItem != null)
+                {
+                    // Si el artículo ya está en el carrito, calcular la cantidad total solicitada
+                    cantidadTotalSolicitada += existingItem.Cantidad;
+                }
+
+                // Verificar si hay suficientes unidades disponibles en el inventario
+                if (articulo.Quantityart < cantidadTotalSolicitada)
+                {
+                    throw new Exception($"Stock insuficiente para el artículo {articulo.Nameart}. Cantidad disponible: {articulo.Quantityart}");
+                }
 
                 if (existingItem != null)
                 {
@@ -100,10 +107,6 @@ namespace Compras.Repositories
                     _context.Carritoscompras.Add(nuevoArticuloEnCarrito);
                 }
 
-                // Actualizar el inventario del artículo
-                articulo.Quantityart -= cantidad;
-                _context.Articulos.Update(articulo);
-
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
 
@@ -111,13 +114,10 @@ namespace Compras.Repositories
             }
             catch (Exception ex)
             {
-                // Manejar la excepción según tus necesidades
-                // Puedes registrar el error, lanzar una excepción personalizada, etc.
                 await transaction.RollbackAsync();
                 throw new Exception("Error al agregar artículo al carrito.", ex);
             }
         }
-
         public async Task<bool> Remove(int idUsuario, int idArticulo)
         {
             try
@@ -140,7 +140,7 @@ namespace Compras.Repositories
             }
             catch (Exception ex)
             {
-                // Manejar la excepción según tus necesidades
+               
                 throw new Exception("Error al eliminar artículo del carrito.", ex);
             }
         }

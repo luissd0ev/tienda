@@ -32,5 +32,23 @@ namespace Compras.Controllers
         }
 
 
+        [HttpGet("Article/{id}")]
+        public async Task<ActionResult<Articulo>> GetArticuloById(int id)
+        {
+            try
+            {
+                var articulo = await _articleRepository.Get(id);
+                if (articulo == null)
+                {
+                    return NotFound("Artículo no encontrado.");
+                }
+                return Ok(articulo);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Error al obtener el artículo: " + ex.Message);
+            }
+        }
+
     }
 }

@@ -106,7 +106,7 @@ namespace Compras.Repositories
             }
             catch (Exception ex)
             {
-                // Manejar la excepción de acuerdo a tus necesidades
+               
                 return new List<OrdenDetalleResponse>();
             }
         }

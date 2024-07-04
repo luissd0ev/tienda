@@ -54,12 +54,11 @@ namespace Compras.Repositories
             _context.Usuarios.Add(usuario);
             await _context.SaveChangesAsync();
 
-            // Si el registro es exitoso, construir la respuesta completa
+           
             return new RegisterResponse
             {
                 Message = "Registro exitoso.",
                 IsSuccessful = true
-                // Puedes agregar más datos relevantes aquí
             };
         }
 
